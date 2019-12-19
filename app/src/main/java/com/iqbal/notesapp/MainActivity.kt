@@ -2,6 +2,7 @@ package com.iqbal.notesapp
 
 import android.annotation.SuppressLint
 import android.app.SearchManager
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -25,35 +26,36 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        LoadQuery("%")
+        "%".loadQuery()
     }
 
     override fun onResumeFragments() {
         super.onResumeFragments()
-        LoadQuery("%")
+        "%".loadQuery()
     }
 
-    private fun LoadQuery(title: String) {
-        val dbManager = DBManager(this)
-        val projections = arrayOf("id", "title", "description")
-        val selectionArgs = arrayOf(title)
-        val cursor = dbManager.Query(projections, "title like ?", selectionArgs, "title")
+    private fun String.loadQuery() {
+        val dbManager = DBManager(this@MainActivity)
+        val projections = arrayOf("ID", "Title", "Description")
+        val selectionArgs = arrayOf(this)
+        val cursor = dbManager.query(projections, "Title like ?", selectionArgs, "Title")
         listNotes.clear()
         if (cursor.moveToFirst()) {
             do {
-                val id = cursor.getInt(cursor.getColumnIndex("id"))
-                val title = cursor.getString(cursor.getColumnIndex("title"))
-                val description = cursor.getString(cursor.getColumnIndex("description"))
-                listNotes.add(Note(id, title, description))
+                val id = cursor.getInt(cursor.getColumnIndex("ID"))
+                val tit = cursor.getString(cursor.getColumnIndex("Title"))
+                val description = cursor.getString(cursor.getColumnIndex("Description"))
+                listNotes.add(Note(id, tit, description))
             } while (cursor.moveToNext())
         }
 
-        val myNotesAdapter = MyNotesAdapter(this, listNotes)
+        val myNotesAdapter =
+            MyNotesAdapter(this@MainActivity, listNotes)
         lv_notes.adapter = myNotesAdapter
         val total = lv_notes.count
         val ab = supportActionBar
         if (ab != null) {
-            ab.subtitle = "You have $total note(s) in list..."
+            ab.subtitle = "You have $total Note(s) in list."
         }
     }
 
@@ -65,12 +67,12 @@ class MainActivity : AppCompatActivity() {
         sv.setSearchableInfo(sm.getSearchableInfo(componentName))
         sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                LoadQuery("%" + query + "%")
+                ("%$query%").loadQuery()
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                LoadQuery("%" + newText + "%")
+                ("%$newText%").loadQuery()
                 return false
             }
         })
@@ -103,21 +105,22 @@ class MainActivity : AppCompatActivity() {
             myView.btn_delete.setOnClickListener {
                 val dbManager = DBManager(this.context!!)
                 val selectionArgs = arrayOf(myNote.idNote.toString())
-                dbManager.Delete("id=?", selectionArgs)
-                LoadQuery("%")
+                dbManager.delete("ID=?", selectionArgs)
+                ("%").loadQuery()
             }
 
             myView.btn_edit.setOnClickListener {
-                GoToUpdate(myNote)
+                goToUpdate(myNote)
             }
 
             myView.btn_copy.setOnClickListener {
                 val title = myView.tv_title.text.toString()
-                val desc = myView.tv_desc.toString()
+                val desc = myView.tv_desc.text.toString()
                 val a = title + "\n" + desc
                 val cb = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cb.text = a
-                Toast.makeText(this@MainActivity, "Copied...", Toast.LENGTH_SHORT).show()
+                val c = ClipData.newPlainText(a, a)
+                cb.setPrimaryClip(c)
+                Toast.makeText(this@MainActivity, "Copied", Toast.LENGTH_SHORT).show()
             }
 
             myView.btn_share.setOnClickListener {
@@ -146,11 +149,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun GoToUpdate(myNote: Note) {
+    private fun goToUpdate(myNote: Note) {
         val intent = Intent(this, AddNoteActivity::class.java)
-        intent.putExtra("id", myNote.idNote)
-        intent.putExtra("name", myNote.nameNote)
-        intent.putExtra("description", myNote.descNote)
+        intent.putExtra("ID", myNote.idNote)
+        intent.putExtra("Title", myNote.nameNote)
+        intent.putExtra("Description", myNote.descNote)
         startActivity(intent)
     }
 }

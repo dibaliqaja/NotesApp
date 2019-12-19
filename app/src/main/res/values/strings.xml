@@ -4,5 +4,12 @@
     <string name="search">Search</string>
     <string name="add_note">Add Note</string>
     <string name="title">Title</string>
-    <string name="desc_title">There may be a very long description of the note</string>
+    <string name="desc_title">There may be a very long description</string>
+    <string name="enter_description">Enter Description</string>
+    <string name="add">Add</string>
+    <string name="enter_title">Enter Title</string>
+    <string name="delete">delete</string>
+    <string name="edit">edit</string>
+    <string name="copy">copy</string>
+    <string name="share">share</string>
 </resources>
