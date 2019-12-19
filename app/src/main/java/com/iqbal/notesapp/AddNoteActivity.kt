@@ -16,6 +16,9 @@ class AddNoteActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_note)
 
+        val ab = supportActionBar
+        ab?.setDisplayHomeAsUpEnabled(true)
+
         try {
             val bundle: Bundle = intent.extras!!
             id = bundle.getInt("ID", 0)
@@ -24,6 +27,11 @@ class AddNoteActivity : AppCompatActivity() {
                 edt_desc.setText(bundle.getString("Description"))
             }
         } catch (ex: Exception) {}
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     fun add(view: View) {
